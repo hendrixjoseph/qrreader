@@ -1,11 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.joehxblog.qrreader"
     compileSdk {
         version = release(37)
+    }
+
+    buildFeatures {
+        compose = true
     }
 
     defaultConfig {
@@ -33,14 +38,23 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.material3)
+
+//    implementation(libs.androidx.appcompat)
+//    implementation(libs.androidx.core.ktx)
+//    implementation(libs.androidx.runtime)
 
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+
+    implementation(libs.androidx.ui.tooling.preview)
+
+    debugImplementation(libs.androidx.ui.tooling)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
