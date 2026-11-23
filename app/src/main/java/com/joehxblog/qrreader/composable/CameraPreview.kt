@@ -1,6 +1,7 @@
 package com.joehxblog.qrreader.composable
 
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -15,6 +16,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
 fun CameraPreview(
+    imageCapture: ImageCapture,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -56,7 +58,8 @@ fun CameraPreview(
                     cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
-                        preview
+                        preview,
+                        imageCapture
                     )
                 } catch (exception: Exception) {
                     exception.printStackTrace()

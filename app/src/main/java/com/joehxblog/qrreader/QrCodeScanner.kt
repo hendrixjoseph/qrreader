@@ -23,13 +23,23 @@ class QrCodeScanner {
         onSuccess: (List<Barcode>) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        try {
-            val image = InputImage.fromFilePath(context, uri)
+        val image = InputImage.fromFilePath(context, uri)
 
+        processImage(
+            image,
+            onSuccess,
+            onError
+        )
+    }
+    fun processImage(
+        image: InputImage,
+        onSuccess: (List<Barcode>) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        try {
             scanner.process(image)
                 .addOnSuccessListener(onSuccess)
                 .addOnFailureListener(onError)
-
         } catch (e: IOException) {
             onError(e)
         }

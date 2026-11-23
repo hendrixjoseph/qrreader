@@ -8,6 +8,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -32,8 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil3.compose.AsyncImage
 import androidx.compose.material3.LinearProgressIndicator
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.joehxblog.qrreader.QrCodeScanner
 import com.joehxblog.qrreader.activity.DecodedContentActivity
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @Composable
 fun CameraScreen(
@@ -86,9 +92,19 @@ fun CameraScreen(
         }
     }
 
-//    val imageCapture = ImageCapture.Builder()
-//        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-//        .build()
+    val imageCapture = ImageCapture.Builder()
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+        .build()
+
+    val cameraExecutor = remember {
+        Executors.newSingleThreadExecutor()
+    }
+
+    DisposableEffect(cameraExecutor) {
+        onDispose {
+            cameraExecutor.shutdown()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -112,6 +128,7 @@ fun CameraScreen(
             )
         } else if (hasCameraPermission) {
             CameraPreview(
+                imageCapture = imageCapture,
                 modifier = Modifier
                     .fillMaxSize(0.65f)
             )
@@ -155,7 +172,17 @@ fun CameraScreen(
                         }
                     )
                 } else {
-                    isProcessing = false
+                    processCameraImage(
+                        imageCapture,
+                        qrScanner,
+                        context,
+                        cameraExecutor,
+                        onSuccess = { isProcessing = false },
+                        onError = { error ->
+                            scanError = error
+                            isProcessing = false
+                        }
+                    )
                 }
             },
             enabled = !isProcessing,
@@ -181,28 +208,90 @@ fun CameraScreen(
     }
 }
 
+fun launchDecodedContentActivity(barcodes: List<Barcode>, context: Context): Boolean {
+    val decodedValues = barcodes.mapNotNull {
+        it.rawValue
+    }
+
+    if (decodedValues.isNotEmpty()) {
+        val intent = Intent(
+            context,
+            DecodedContentActivity::class.java
+        ).apply {
+            putStringArrayListExtra(
+                DecodedContentActivity.EXTRA_DECODED_VALUES,
+                ArrayList(decodedValues)
+            )
+        }
+
+        context.startActivity(intent)
+
+        return true
+    } else {
+        return false
+    }
+}
+
+fun processCameraImage(
+    imageCapture: ImageCapture,
+    qrScanner: QrCodeScanner,
+    context: Context,
+    cameraExecutor: ExecutorService,
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit) {
+    imageCapture.takePicture(
+        cameraExecutor,
+        object : ImageCapture.OnImageCapturedCallback() {
+            override fun onCaptureSuccess(image: ImageProxy) {
+                val mediaImage = image.image
+
+                if (mediaImage == null) {
+                    image.close()
+                    return
+                }
+
+                val inputImage = InputImage.fromMediaImage(
+                    mediaImage,
+                    image.imageInfo.rotationDegrees
+                )
+
+                qrScanner.processImage(
+                    inputImage,
+                    onSuccess = { barcodes ->
+                        val launched = launchDecodedContentActivity(barcodes, context)
+
+                        if (launched) {
+                            onSuccess()
+                        } else {
+                            onError("Unable to process image")
+                        }
+
+                        image.close()
+                    },
+                    onError = { exception ->
+                        val scanError = exception.localizedMessage ?: "Unable to process image"
+                        onError(scanError)
+                        image.close()
+                    }
+                )
+            }
+
+            override fun onError(exception: ImageCaptureException) {
+                val scanError = exception.localizedMessage ?: "Unable to process image"
+                onError(scanError)
+            }
+        }
+    )
+}
+
 fun processSharedImage(sharedImageUri: Uri, qrScanner: QrCodeScanner, context: Context, onSuccess: () -> Unit, onError: (String) -> Unit) {
     qrScanner.processImage(
         context = context,
         uri = sharedImageUri,
         onSuccess = { barcodes ->
-            val decodedValues = barcodes.mapNotNull {
-                it.rawValue
-            }
+            val launched = launchDecodedContentActivity(barcodes, context)
 
-            if (decodedValues.isNotEmpty()) {
-                val intent = Intent(
-                    context,
-                    DecodedContentActivity::class.java
-                ).apply {
-                    putStringArrayListExtra(
-                        DecodedContentActivity.EXTRA_DECODED_VALUES,
-                        ArrayList(decodedValues)
-                    )
-                }
-
-                context.startActivity(intent)
-
+            if (launched) {
                 onSuccess()
             } else {
                 onError("Unable to process image")
