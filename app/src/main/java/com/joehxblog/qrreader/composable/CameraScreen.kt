@@ -1,11 +1,13 @@
 package com.joehxblog.qrreader.composable
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.ImageCapture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -84,6 +86,10 @@ fun CameraScreen(
         }
     }
 
+//    val imageCapture = ImageCapture.Builder()
+//        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+//        .build()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -135,36 +141,16 @@ fun CameraScreen(
             onClick = {
                 decodedValues = emptyList()
                 scanError = null
+                isProcessing = true
 
                 if (sharedImageUri != null) {
-                    isProcessing = true
-
-                    qrScanner.processImage(
+                    processSharedImage(
+                        sharedImageUri = sharedImageUri,
+                        qrScanner = qrScanner,
                         context = context,
-                        uri = sharedImageUri,
-                        onSuccess = { barcodes ->
-                            decodedValues = barcodes.mapNotNull {
-                                it.rawValue
-                            }
-                            isProcessing = false
-
-                            if (decodedValues.isNotEmpty()) {
-                                val intent = Intent(
-                                    context,
-                                    DecodedContentActivity::class.java
-                                ).apply {
-                                    putStringArrayListExtra(
-                                        DecodedContentActivity.EXTRA_DECODED_VALUES,
-                                        ArrayList(decodedValues)
-                                    )
-                                }
-
-                                context.startActivity(intent)
-                            }
-                        },
-                        onError = { exception ->
-                            scanError = exception.localizedMessage
-                                ?: "Unable to process image"
+                        onSuccess = { isProcessing = false },
+                        onError = { error ->
+                            scanError = error
                             isProcessing = false
                         }
                     )
@@ -172,6 +158,7 @@ fun CameraScreen(
                     isProcessing = false
                 }
             },
+            enabled = !isProcessing,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (isProcessing) {
@@ -192,4 +179,38 @@ fun CameraScreen(
             }
         }
     }
+}
+
+fun processSharedImage(sharedImageUri: Uri, qrScanner: QrCodeScanner, context: Context, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    qrScanner.processImage(
+        context = context,
+        uri = sharedImageUri,
+        onSuccess = { barcodes ->
+            val decodedValues = barcodes.mapNotNull {
+                it.rawValue
+            }
+
+            if (decodedValues.isNotEmpty()) {
+                val intent = Intent(
+                    context,
+                    DecodedContentActivity::class.java
+                ).apply {
+                    putStringArrayListExtra(
+                        DecodedContentActivity.EXTRA_DECODED_VALUES,
+                        ArrayList(decodedValues)
+                    )
+                }
+
+                context.startActivity(intent)
+
+                onSuccess()
+            } else {
+                onError("Unable to process image")
+            }
+        },
+        onError = { exception ->
+            val scanError = exception.localizedMessage ?: "Unable to process image"
+            onError(scanError)
+        }
+    )
 }
