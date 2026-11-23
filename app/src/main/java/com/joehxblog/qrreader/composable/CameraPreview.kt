@@ -1,7 +1,5 @@
+package com.joehxblog.qrreader.composable
 
-package com.joehxblog.qrreader
-
-import android.content.Context
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider

@@ -1,6 +1,7 @@
-package com.joehxblog.qrreader
+package com.joehxblog.qrreader.composable
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -29,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil3.compose.AsyncImage
 import androidx.compose.material3.CircularProgressIndicator
+import com.joehxblog.qrreader.QrCodeScanner
+import com.joehxblog.qrreader.activity.DecodedContentActivity
 
 @Composable
 fun CameraScreen(
@@ -90,6 +93,20 @@ fun CameraScreen(
                         it.rawValue
                     }
                     isProcessing = false
+
+                    if (decodedValues.isNotEmpty()) {
+                        val intent = Intent(
+                            context,
+                            DecodedContentActivity::class.java
+                        ).apply {
+                            putStringArrayListExtra(
+                                DecodedContentActivity.EXTRA_DECODED_VALUES,
+                                ArrayList(decodedValues)
+                            )
+                        }
+
+                        context.startActivity(intent)
+                    }
                 },
                 onError = { exception ->
                     scanError = exception.localizedMessage
@@ -133,8 +150,6 @@ fun CameraScreen(
                 modifier = Modifier
                     .fillMaxSize(0.65f)
             )
-
-            Text("Point your camera at a QR code")
         } else {
             Button(
                 onClick = {

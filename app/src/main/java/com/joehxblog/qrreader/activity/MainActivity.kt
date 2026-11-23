@@ -1,5 +1,4 @@
-
-package com.joehxblog.qrreader
+package com.joehxblog.qrreader.activity
 
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.joehxblog.qrreader.composable.CameraScreen
 
 class MainActivity : ComponentActivity() {
     private var sharedImageUri by mutableStateOf<Uri?>(null)
