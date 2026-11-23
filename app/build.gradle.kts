@@ -43,9 +43,9 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)
 
-//    implementation(libs.androidx.appcompat)
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.runtime)
 
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)

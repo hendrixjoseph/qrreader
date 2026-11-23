@@ -12,7 +12,7 @@ lifecycleRuntimeKtx = "2.11.1"
 material = "1.14.0"
 material3 = "1.5.0"
 runtime = "1.13.0"
-ui = "1.13.0"
+ui = "1.10.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
