@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil3.compose.AsyncImage
+import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun CameraScreen(
@@ -50,6 +52,55 @@ fun CameraScreen(
         ) { granted ->
             hasCameraPermission = granted
         }
+
+    val qrScanner = remember {
+        QrCodeScanner()
+    }
+
+    var decodedValues by remember {
+        mutableStateOf<List<String>>(emptyList())
+    }
+
+    var isProcessing by remember {
+        mutableStateOf(false)
+    }
+
+    var scanError by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    DisposableEffect(qrScanner) {
+        onDispose {
+            qrScanner.close()
+        }
+    }
+
+    LaunchedEffect(sharedImageUri) {
+        decodedValues = emptyList()
+        scanError = null
+
+        if (sharedImageUri != null) {
+            isProcessing = true
+
+            qrScanner.processImage(
+                context = context,
+                uri = sharedImageUri,
+                onSuccess = { barcodes ->
+                    decodedValues = barcodes.mapNotNull {
+                        it.rawValue
+                    }
+                    isProcessing = false
+                },
+                onError = { exception ->
+                    scanError = exception.localizedMessage
+                        ?: "Unable to process image"
+                    isProcessing = false
+                }
+            )
+        } else {
+            isProcessing = false
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
@@ -93,6 +144,39 @@ fun CameraScreen(
                 }
             ) {
                 Text("Grant Camera Permission")
+            }
+        }
+
+        when {
+            isProcessing -> {
+                CircularProgressIndicator()
+            }
+
+            scanError != null -> {
+                Text("Error: $scanError")
+            }
+
+            decodedValues.isEmpty() && sharedImageUri != null -> {
+                Text("No QR codes found")
+            }
+
+            decodedValues.isNotEmpty() -> {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Found ${decodedValues.size} QR code(s)")
+
+                    decodedValues.forEach { value ->
+                        Text(
+                            text = value,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            }
+
+            else -> {
+                Text("Point your camera at a QR code")
             }
         }
     }
