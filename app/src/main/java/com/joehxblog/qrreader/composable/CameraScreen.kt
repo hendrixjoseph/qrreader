@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil3.compose.AsyncImage
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import com.joehxblog.qrreader.QrCodeScanner
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 
@@ -78,47 +78,6 @@ fun CameraScreen(
         }
     }
 
-    LaunchedEffect(sharedImageUri) {
-        decodedValues = emptyList()
-        scanError = null
-
-        if (sharedImageUri != null) {
-            isProcessing = true
-
-            qrScanner.processImage(
-                context = context,
-                uri = sharedImageUri,
-                onSuccess = { barcodes ->
-                    decodedValues = barcodes.mapNotNull {
-                        it.rawValue
-                    }
-                    isProcessing = false
-
-                    if (decodedValues.isNotEmpty()) {
-                        val intent = Intent(
-                            context,
-                            DecodedContentActivity::class.java
-                        ).apply {
-                            putStringArrayListExtra(
-                                DecodedContentActivity.EXTRA_DECODED_VALUES,
-                                ArrayList(decodedValues)
-                            )
-                        }
-
-                        context.startActivity(intent)
-                    }
-                },
-                onError = { exception ->
-                    scanError = exception.localizedMessage
-                        ?: "Unable to process image"
-                    isProcessing = false
-                }
-            )
-        } else {
-            isProcessing = false
-        }
-    }
-
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -163,38 +122,74 @@ fun CameraScreen(
         }
 
         when {
-            isProcessing -> {
-                CircularProgressIndicator()
-            }
-
             scanError != null -> {
                 Text("Error: $scanError")
             }
 
-            decodedValues.isEmpty() && sharedImageUri != null -> {
-                Text("No QR codes found")
-            }
-
-            decodedValues.isNotEmpty() -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("Found ${decodedValues.size} QR code(s)")
-
-                    decodedValues.forEach { value ->
-                        Text(
-                            text = value,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                }
-            }
-
-            else -> {
+            sharedImageUri == null -> {
                 Text("Point your camera at a QR code")
             }
         }
+
+        Button(
+            onClick = {
+                decodedValues = emptyList()
+                scanError = null
+
+                if (sharedImageUri != null) {
+                    isProcessing = true
+
+                    qrScanner.processImage(
+                        context = context,
+                        uri = sharedImageUri,
+                        onSuccess = { barcodes ->
+                            decodedValues = barcodes.mapNotNull {
+                                it.rawValue
+                            }
+                            isProcessing = false
+
+                            if (decodedValues.isNotEmpty()) {
+                                val intent = Intent(
+                                    context,
+                                    DecodedContentActivity::class.java
+                                ).apply {
+                                    putStringArrayListExtra(
+                                        DecodedContentActivity.EXTRA_DECODED_VALUES,
+                                        ArrayList(decodedValues)
+                                    )
+                                }
+
+                                context.startActivity(intent)
+                            }
+                        },
+                        onError = { exception ->
+                            scanError = exception.localizedMessage
+                                ?: "Unable to process image"
+                            isProcessing = false
+                        }
+                    )
+                } else {
+                    isProcessing = false
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (isProcessing) {
+                LinearProgressIndicator()
+            } else {
+                Text("Scan Now")
+            }
+        }
+
+        if (sharedImageUri != null) {
+            Button(
+                onClick = {
+                    onClearImage()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Clear")
+            }
+        }
     }
-
-
 }
