@@ -18,14 +18,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        sharedImageUri = extractImageUri(intent)
+
         setContent {
             MaterialTheme {
                 Surface {
-                    CameraScreen()
+                    CameraScreen(
+                        sharedImageUri = sharedImageUri,
+                        onClearImage = {
+                            sharedImageUri = null
+                        }
+                    )
                 }
             }
         }
-
     }
 
     override fun onNewIntent(intent: Intent) {

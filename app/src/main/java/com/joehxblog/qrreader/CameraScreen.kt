@@ -2,10 +2,10 @@ package com.joehxblog.qrreader
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,12 +22,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import coil3.compose.AsyncImage
 
 @Composable
-fun CameraScreen() {
+fun CameraScreen(
+    sharedImageUri: Uri?,
+    onClearImage: () -> Unit
+) {
     val context = LocalContext.current
 
     var hasCameraPermission by remember {
@@ -52,31 +57,34 @@ fun CameraScreen() {
         }
     }
 
-    if (hasCameraPermission) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(16.dp)
-                .statusBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(
-                space = 12.dp,
-                alignment = Alignment.CenterVertically
-            ),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(16.dp)
+            .statusBarsPadding(),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 12.dp,
+            alignment = Alignment.CenterVertically
+        ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (sharedImageUri != null) {
+            AsyncImage(
+                model = sharedImageUri,
+                contentDescription = "Shared image",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxSize(0.65f)
+            )
+        } else if (hasCameraPermission) {
             CameraPreview(
                 modifier = Modifier
                     .fillMaxSize(0.65f)
             )
 
             Text("Point your camera at a QR code")
-        }
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        } else {
             Button(
                 onClick = {
                     permissionLauncher.launch(
@@ -88,4 +96,6 @@ fun CameraScreen() {
             }
         }
     }
+
+
 }
