@@ -7,14 +7,31 @@ import androidx.compose.runtime.setValue
 class DecodedContentHandler(initialContent: String) {
     var content by mutableStateOf(initialContent)
 
-    fun getButtonActionText(): String {
-        return when {
-            content.startsWith("https://", ignoreCase = true) ||
-            content.startsWith("http://", ignoreCase = true) -> "View"
+    fun getActionType(): QrActionType =
+        when {
+            content.startsWith("https://", true) ||
+            content.startsWith("http://", true) -> QrActionType.VIEW
 
-            content.startsWith("tel:", ignoreCase = true) -> "Dial"
+            content.startsWith("tel:", true) -> QrActionType.DIAL
 
-            else -> "Open"
+            content.startsWith("mailto:", true) -> QrActionType.EMAIL
+
+            content.startsWith("sms:", true) ||
+            content.startsWith("smsto:", true) -> QrActionType.TEXT
+
+            content.startsWith("geo:", true) -> QrActionType.MAP
+
+            content.startsWith("WIFI:", true) -> QrActionType.CONNECT_WIFI
+
+            content.startsWith("BEGIN:VEVENT", true) -> QrActionType.ADD_EVENT
+
+            content.startsWith("BEGIN:VCARD", true) ||
+            content.startsWith("MECARD:", true) -> QrActionType.ADD_CONTACT
+
+            else -> QrActionType.NONE
         }
+
+    fun getButtonActionText(): String {
+        return getActionType().buttonText
     }
 }

@@ -15,8 +15,8 @@ class DecodedContentHandlerTest {
         HTTP://example.com,  View
         tel:5551234567,      Dial
         TEL:5551234567,      Dial
-        some random text,    Open
-        ftp://example.com,   Open"""
+        some random text,    ''
+        ftp://example.com,   ''"""
     )
     fun `returns expected button action text`(
         content: String,
