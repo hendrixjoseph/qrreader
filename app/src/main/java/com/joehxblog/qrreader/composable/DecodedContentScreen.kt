@@ -97,11 +97,20 @@ fun DecodedContentScreen(
             Button(
                 onClick = {
                     scope.launch {
-                        if (!decodedContentHandler.checkRedirect(context)) {
+                        try {
+                            if (!decodedContentHandler.checkRedirect(context)) {
+                                Toast.makeText(
+                                    context,
+                                    "no redirect found",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (exception: Exception) {
+                            val error = exception.localizedMessage ?: "error checking redirect"
                             Toast.makeText(
                                 context,
-                                "no redirect found",
-                                Toast.LENGTH_SHORT
+                                error,
+                                Toast.LENGTH_LONG
                             ).show()
                         }
                     }
