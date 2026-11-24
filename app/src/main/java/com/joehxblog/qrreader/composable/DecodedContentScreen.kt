@@ -60,6 +60,25 @@ fun DecodedContentScreen(
             )
 
             Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val text = when {
+                    content.startsWith("https://", ignoreCase = true) ||
+                            content.startsWith("http://", ignoreCase = true) -> {
+                        "View"
+                    }
+
+                    content.startsWith("tel:", ignoreCase = true) -> {
+                        "Dial"
+                    }
+
+                    else -> "Open"
+                }
+                Text(text)
+            }
+
+            Button(
                 onClick = {
                     val clipboard = context.getSystemService(
                         Context.CLIPBOARD_SERVICE
