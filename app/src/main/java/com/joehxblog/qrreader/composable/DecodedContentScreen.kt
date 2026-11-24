@@ -3,6 +3,7 @@ package com.joehxblog.qrreader.composable
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,6 +57,43 @@ fun DecodedContentScreen(
                 placeholder = { Text("QR code contents...") },
                 minLines = 5
             )
+
+            Button(
+                onClick = {
+                    if (!decodedContentHandler.removeUtmParameters(context)) {
+                        Toast.makeText(
+                            context,
+                            "no utm parameters found",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("remove utm parameters")
+            }
+
+            Button(
+                onClick = {
+                    if(!decodedContentHandler.removeQueryParameters(context)) {
+                        Toast.makeText(
+                            context,
+                            "no query parameters found",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("remove query parameters")
+            }
+
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("check for redirects")
+            }
 
             Button(
                 onClick = {decodedContentHandler.doIntentAction(context)},

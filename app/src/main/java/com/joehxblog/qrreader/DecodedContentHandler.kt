@@ -2,6 +2,7 @@ package com.joehxblog.qrreader
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.CalendarContract
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import biweekly.Biweekly
 import biweekly.component.VEvent
+import com.joehxblog.qrreader.activity.DecodedContentActivity
 import ezvcard.Ezvcard
 
 class DecodedContentHandler(initialContent: String) {
@@ -40,6 +42,51 @@ class DecodedContentHandler(initialContent: String) {
 
     fun getButtonActionText(): String {
         return getActionType().buttonText
+    }
+
+    fun removeUtmParameters(context: Context): Boolean {
+        val uri = content.toUri()
+        val builder = uri.buildUpon().clearQuery()
+
+        uri.queryParameterNames
+            .filterNot { it.startsWith("utm_", ignoreCase = true) }
+            .forEach { name ->
+                uri.getQueryParameters(name).forEach { value ->
+                    builder.appendQueryParameter(name, value)
+                }
+            }
+
+        return go(builder.build().toString(), context)
+    }
+
+    fun removeQueryParameters(context: Context): Boolean {
+        val newContent = content.toUri()
+            .buildUpon()
+            .clearQuery()
+            .build()
+            .toString()
+
+        return go(newContent, context)
+    }
+
+    fun go(newContent: String, context: Context): Boolean {
+        if (newContent == content) {
+            return false
+        } else {
+            val intent = Intent(
+                context,
+                DecodedContentActivity::class.java
+            ).apply {
+                putStringArrayListExtra(
+                    DecodedContentActivity.EXTRA_DECODED_VALUES,
+                    ArrayList(listOf(newContent))
+                )
+            }
+
+            context.startActivity(intent)
+
+            return true
+        }
     }
 
     fun doIntentAction(context: Context) {
