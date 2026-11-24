@@ -92,9 +92,11 @@ fun CameraScreen(
         }
     }
 
-    val imageCapture = ImageCapture.Builder()
-        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-        .build()
+    val imageCapture = remember {
+        ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .build()
+    }
 
     val cameraExecutor = remember {
         Executors.newSingleThreadExecutor()
@@ -238,7 +240,8 @@ fun processCameraImage(
     context: Context,
     cameraExecutor: ExecutorService,
     onSuccess: () -> Unit,
-    onError: (String) -> Unit) {
+    onError: (String) -> Unit
+) {
     imageCapture.takePicture(
         cameraExecutor,
         object : ImageCapture.OnImageCapturedCallback() {
@@ -247,6 +250,7 @@ fun processCameraImage(
 
                 if (mediaImage == null) {
                     image.close()
+                    onError("no image?")
                     return
                 }
 
