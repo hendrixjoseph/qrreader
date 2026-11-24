@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import biweekly.Biweekly
 import biweekly.component.VEvent
+import ezvcard.Ezvcard
 
 class DecodedContentHandler(initialContent: String) {
     var content by mutableStateOf(initialContent)
@@ -41,18 +42,16 @@ class DecodedContentHandler(initialContent: String) {
         return getActionType().buttonText
     }
 
-    fun getIntentAction(): String? {
-        return getActionType().intentAction
-    }
-
     fun doIntentAction(context: Context) {
         val actionType = getActionType();
         val intentAction = actionType.intentAction
 
         if (intentAction != null) {
             if (intentAction == Intent.ACTION_INSERT) {
-                if (actionType == QrActionType.ADD_EVENT) {
-                    doEventAction(context)
+                when (actionType) {
+                    QrActionType.ADD_EVENT -> doEventAction(context)
+                    QrActionType.ADD_CONTACT -> doContactAction(context)
+                    else -> {}
                 }
             } else {
                 val uri = content.toUri()
@@ -60,6 +59,11 @@ class DecodedContentHandler(initialContent: String) {
                 context.startActivity(intent)
             }
         }
+    }
+
+    fun doContactAction(context: Context) {
+        val vcard = Ezvcard.parse(content).first()
+        // TODO: this function
     }
 
     fun doEventAction(context: Context) {

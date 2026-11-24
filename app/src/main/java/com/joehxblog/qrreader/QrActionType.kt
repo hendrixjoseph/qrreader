@@ -10,6 +10,6 @@ enum class QrActionType(val buttonText: String, val intentAction: String?) {
     MAP("Map", Intent.ACTION_VIEW),
     CONNECT_WIFI("Connect", null),
     ADD_EVENT("Add Event", Intent.ACTION_INSERT),
-    ADD_CONTACT("Add Contact", null),
+    ADD_CONTACT("Add Contact", Intent.ACTION_INSERT),
     NONE("", null)
 }

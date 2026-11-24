@@ -8,6 +8,7 @@ cameraxVersion = "1.7.0"
 coilCompose = "3.4.0"
 coreKtx = "1.19.1"
 espressoCore = "3.7.0"
+ezVcard = "0.12.2"
 junit = "4.13.2"
 junitBom = "6.1.3"
 junitVersion = "1.3.0"
@@ -37,6 +38,7 @@ androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview
 barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 biweekly = { module = "net.sf.biweekly:biweekly", version.ref = "biweekly" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+ez-vcard = { module = "com.googlecode.ez-vcard:ez-vcard", version.ref = "ezVcard" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
