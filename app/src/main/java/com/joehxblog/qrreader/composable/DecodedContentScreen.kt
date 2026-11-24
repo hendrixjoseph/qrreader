@@ -70,6 +70,7 @@ fun DecodedContentScreen(
                         ).show()
                     }
                 },
+                enabled = decodedContentHandler.urlButtonsEnabled(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("remove utm parameters")
@@ -85,6 +86,7 @@ fun DecodedContentScreen(
                         ).show()
                     }
                 },
+                enabled = decodedContentHandler.urlButtonsEnabled(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("remove query parameters")
@@ -104,6 +106,7 @@ fun DecodedContentScreen(
                         }
                     }
                 },
+                enabled = decodedContentHandler.urlButtonsEnabled(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("check for redirects")

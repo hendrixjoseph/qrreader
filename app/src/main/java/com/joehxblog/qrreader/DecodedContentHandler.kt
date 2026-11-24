@@ -20,6 +20,8 @@ import java.net.URL
 class DecodedContentHandler(initialContent: String) {
     var content by mutableStateOf(initialContent)
 
+    var checkingRedirect by mutableStateOf(false)
+
     fun getActionType(): QrActionType =
         when {
             content.startsWith("https://", true) ||
@@ -48,6 +50,10 @@ class DecodedContentHandler(initialContent: String) {
         return getActionType().buttonText
     }
 
+    fun urlButtonsEnabled(): Boolean {
+        return getActionType() == QrActionType.VIEW && !checkingRedirect
+    }
+
     fun removeUtmParameters(context: Context): Boolean {
         val uri = content.toUri()
         val builder = uri.buildUpon().clearQuery()
@@ -74,20 +80,29 @@ class DecodedContentHandler(initialContent: String) {
     }
 
     suspend fun checkRedirect(context: Context): Boolean {
-        withContext(Dispatchers.IO) {
-            val redirectCodes = setOf(300, 301, 302, 303, 307, 308)
+        checkingRedirect = true
+        try {
+            withContext(Dispatchers.IO) {
+                val redirectCodes = setOf(300, 301, 302, 303, 307, 308)
 
-            var response = request(content, "HEAD")
+                var response = request(content, "HEAD")
 
-            // Some servers don't support HEAD.
-            if (response.first == 405 || response.first == 501) {
-                response = request(content, "GET")
+                // Some servers don't support HEAD.
+                if (response.first == 405 || response.first == 501) {
+                    response = request(content, "GET")
+                }
+
+                val (status, location) = response
+
+                return@withContext !(status !in redirectCodes || location == null) && go(
+                    location,
+                    context
+                )
             }
-
-            val (status, location) = response
-
-            return@withContext !(status !in redirectCodes || location == null) && go(location, context)
+        } finally {
+            checkingRedirect = false
         }
+
         return false
     }
 
