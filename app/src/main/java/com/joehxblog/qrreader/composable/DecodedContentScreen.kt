@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.joehxblog.qrreader.DecodedContentHandler
 
 @Composable
 fun DecodedContentScreen(
@@ -30,8 +31,8 @@ fun DecodedContentScreen(
 ) {
     val context = LocalContext.current
 
-    var content by remember {
-        mutableStateOf(initialContent)
+    val decodedContentHandler = remember {
+        DecodedContentHandler(initialContent)
     }
 
     Scaffold(
@@ -49,8 +50,8 @@ fun DecodedContentScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
+                value = decodedContentHandler.content,
+                onValueChange = { decodedContentHandler.content = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -63,18 +64,7 @@ fun DecodedContentScreen(
                 onClick = {},
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val text = when {
-                    content.startsWith("https://", ignoreCase = true) ||
-                            content.startsWith("http://", ignoreCase = true) -> {
-                        "View"
-                    }
-
-                    content.startsWith("tel:", ignoreCase = true) -> {
-                        "Dial"
-                    }
-
-                    else -> "Open"
-                }
+                val text = decodedContentHandler.getButtonActionText()
                 Text(text)
             }
 
@@ -87,7 +77,7 @@ fun DecodedContentScreen(
                     clipboard.setPrimaryClip(
                         ClipData.newPlainText(
                             "QR Code Contents",
-                            content
+                            decodedContentHandler.content
                         )
                     )
                 },
