@@ -1,13 +1,15 @@
 package com.joehxblog.qrreader
 
-enum class QrActionType(val buttonText: String) {
-    VIEW("View"),
-    DIAL("Dial"),
-    EMAIL("Email"),
-    TEXT("Text"),
-    MAP("Map"),
-    CONNECT_WIFI("Connect"),
-    ADD_EVENT("Add Event"),
-    ADD_CONTACT("Add Contact"),
-    NONE("")
+import android.content.Intent
+
+enum class QrActionType(val buttonText: String, val intentAction: String?) {
+    VIEW("View", Intent.ACTION_VIEW),
+    DIAL("Dial", Intent.ACTION_DIAL),
+    EMAIL("Email", Intent.ACTION_SENDTO),
+    TEXT("Text", Intent.ACTION_SENDTO),
+    MAP("Map", Intent.ACTION_VIEW),
+    CONNECT_WIFI("Connect", null),
+    ADD_EVENT("Add Event", null),
+    ADD_CONTACT("Add Contact", null),
+    NONE("", null)
 }

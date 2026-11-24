@@ -34,4 +34,8 @@ class DecodedContentHandler(initialContent: String) {
     fun getButtonActionText(): String {
         return getActionType().buttonText
     }
+
+    fun getIntentAction(): String? {
+        return getActionType().intentAction
+    }
 }

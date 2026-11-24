@@ -3,6 +3,8 @@ package com.joehxblog.qrreader.composable
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.joehxblog.qrreader.DecodedContentHandler
+import androidx.core.net.toUri
 
 @Composable
 fun DecodedContentScreen(
@@ -61,7 +64,15 @@ fun DecodedContentScreen(
             )
 
             Button(
-                onClick = {},
+                onClick = {
+                    val intentAction = decodedContentHandler.getIntentAction()
+
+                    if (intentAction != null) {
+                        val uri = decodedContentHandler.content.toUri()
+                        val intent = Intent(intentAction, uri)
+                        context.startActivity(intent)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val text = decodedContentHandler.getButtonActionText()
