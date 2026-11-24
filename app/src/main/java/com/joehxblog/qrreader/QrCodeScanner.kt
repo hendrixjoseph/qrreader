@@ -2,6 +2,7 @@ package com.joehxblog.qrreader
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning

@@ -1,5 +1,7 @@
 package com.joehxblog.qrreader.composable
 
+import android.util.Log
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -62,7 +64,13 @@ fun CameraPreview(
                         imageCapture
                     )
                 } catch (exception: Exception) {
-                    exception.printStackTrace()
+                    val error = exception.localizedMessage ?: "camera error"
+                    Log.e("com.joexblog.camera", error, exception)
+                    Toast.makeText(
+                        context,
+                        error,
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }, ContextCompat.getMainExecutor(context))

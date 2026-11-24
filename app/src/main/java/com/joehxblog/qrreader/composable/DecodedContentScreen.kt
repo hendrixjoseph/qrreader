@@ -3,6 +3,7 @@ package com.joehxblog.qrreader.composable
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -107,6 +108,7 @@ fun DecodedContentScreen(
                             }
                         } catch (exception: Exception) {
                             val error = exception.localizedMessage ?: "error checking redirect"
+                            Log.e("com.joexblog.redirect", error, exception)
                             Toast.makeText(
                                 context,
                                 error,
