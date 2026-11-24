@@ -48,7 +48,8 @@
 
         <activity
             android:name=".activity.DecodedContentActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:taskAffinity="com.joehxblog.qrreader.decoded" />
     </application>
 
 </manifest>
