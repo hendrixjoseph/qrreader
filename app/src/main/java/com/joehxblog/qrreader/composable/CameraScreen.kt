@@ -139,6 +139,10 @@ fun CameraScreen(
         }
 
         when {
+            isProcessing -> {
+                Text("")
+            }
+
             scanError != null -> {
                 Text("Error: $scanError")
             }

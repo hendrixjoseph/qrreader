@@ -73,7 +73,7 @@ class ImageProcessHandler(val context: Context) {
                             if (launched) {
                                 onSuccess()
                             } else {
-                                onError("Unable to process image")
+                                onError("no qr code?")
                             }
 
                             image.close()
@@ -87,7 +87,7 @@ class ImageProcessHandler(val context: Context) {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    val scanError = exception.localizedMessage ?: "Unable to process image"
+                    val scanError = exception.localizedMessage ?: "Unable to capture image"
                     onError(scanError)
                 }
             }
@@ -104,7 +104,7 @@ class ImageProcessHandler(val context: Context) {
                 if (launched) {
                     onSuccess()
                 } else {
-                    onError("Unable to process image")
+                    onError("no qr code?")
                 }
             },
             onError = { exception ->
