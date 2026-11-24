@@ -17,10 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.joehxblog.qrreader.DecodedContentHandler
+import kotlinx.coroutines.launch
 
 @Composable
 fun DecodedContentScreen(
@@ -88,8 +90,20 @@ fun DecodedContentScreen(
                 Text("remove query parameters")
             }
 
+            val scope = rememberCoroutineScope()
+
             Button(
-                onClick = {},
+                onClick = {
+                    scope.launch {
+                        if (!decodedContentHandler.checkRedirect(context)) {
+                            Toast.makeText(
+                                context,
+                                "no redirect found",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("check for redirects")

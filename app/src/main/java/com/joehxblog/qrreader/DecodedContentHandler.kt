@@ -12,6 +12,10 @@ import biweekly.Biweekly
 import biweekly.component.VEvent
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import ezvcard.Ezvcard
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 
 class DecodedContentHandler(initialContent: String) {
     var content by mutableStateOf(initialContent)
@@ -69,7 +73,25 @@ class DecodedContentHandler(initialContent: String) {
         return go(newContent, context)
     }
 
-    fun go(newContent: String, context: Context): Boolean {
+    suspend fun checkRedirect(context: Context): Boolean {
+        withContext(Dispatchers.IO) {
+            val redirectCodes = setOf(300, 301, 302, 303, 307, 308)
+
+            var response = request(content, "HEAD")
+
+            // Some servers don't support HEAD.
+            if (response.first == 405 || response.first == 501) {
+                response = request(content, "GET")
+            }
+
+            val (status, location) = response
+
+            return@withContext !(status !in redirectCodes || location == null) && go(location, context)
+        }
+        return false
+    }
+
+    private fun go(newContent: String, context: Context): Boolean {
         if (newContent == content) {
             return false
         } else {
@@ -108,12 +130,12 @@ class DecodedContentHandler(initialContent: String) {
         }
     }
 
-    fun doContactAction(context: Context) {
+    private fun doContactAction(context: Context) {
         val vcard = Ezvcard.parse(content).first()
         // TODO: this function
     }
 
-    fun doEventAction(context: Context) {
+    private fun doEventAction(context: Context) {
         val calendar = Biweekly.parse(content).first()
         val event = calendar.events.first()
 
@@ -154,5 +176,25 @@ class DecodedContentHandler(initialContent: String) {
         }
 
         context.startActivity(intent)
+    }
+
+    private fun request(url: String, method: String): Pair<Int, String?> {
+        val connection = URL(url).openConnection() as HttpURLConnection
+
+        try {
+            connection.requestMethod = method
+            connection.instanceFollowRedirects = false
+            connection.connectTimeout = 10_000
+            connection.readTimeout = 10_000
+            connection.setRequestProperty("User-Agent", "QRReader")
+            connection.setRequestProperty("Range", "bytes=0-0")
+
+            val status = connection.responseCode
+            val location = connection.getHeaderField("Location")
+
+            return status to location
+        } finally {
+            connection.disconnect()
+        }
     }
 }
