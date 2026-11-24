@@ -10,13 +10,9 @@ class DecodedContentHandler(initialContent: String) {
     fun getButtonActionText(): String {
         return when {
             content.startsWith("https://", ignoreCase = true) ||
-                    content.startsWith("http://", ignoreCase = true) -> {
-                "View"
-            }
+            content.startsWith("http://", ignoreCase = true) -> "View"
 
-            content.startsWith("tel:", ignoreCase = true) -> {
-                "Dial"
-            }
+            content.startsWith("tel:", ignoreCase = true) -> "Dial"
 
             else -> "Open"
         }
