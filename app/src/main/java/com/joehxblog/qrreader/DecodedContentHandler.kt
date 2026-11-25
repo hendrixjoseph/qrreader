@@ -38,7 +38,7 @@ class DecodedContentHandler(initialContent: String) {
 
             content.startsWith("WIFI:", true) -> QrActionType.CONNECT_WIFI
 
-            content.startsWith("BEGIN:VEVENT", true) -> QrActionType.ADD_EVENT
+            content.startsWith("BEGIN:VCALENDAR", true) -> QrActionType.ADD_EVENT
 
             content.startsWith("BEGIN:VCARD", true) ||
             content.startsWith("MECARD:", true) -> QrActionType.ADD_CONTACT

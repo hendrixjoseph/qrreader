@@ -1,9 +1,11 @@
 package com.joehxblog.qrreader
 
 import android.content.Intent
+import android.provider.CalendarContract
 import androidx.core.net.toUri
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -128,6 +130,44 @@ class DecodedContentHandlerTest {
         assertAll(
             { assertEquals(expectedAction, intent.action) },
             { assertEquals(uri.toUri(), intent.data) }
+        )
+    }
+
+    @Test
+    fun testDoEventAction() {
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
+            .setup()
+            .get()
+
+        val handler = DecodedContentHandler(ADD_EVENT)
+
+        handler.doIntentAction(context)
+
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        assertAll(
+            { assertEquals(Intent.ACTION_INSERT, intent.action) },
+            { assertEquals(CalendarContract.Events.CONTENT_URI, intent.data) }
+        )
+    }
+
+    @Test
+    fun testDoContactAction() {
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
+            .setup()
+            .get()
+
+        val handler = DecodedContentHandler(ADD_CONTACT_vCARD)
+
+        handler.doIntentAction(context)
+
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        assertAll(
+            { assertEquals(Intent.ACTION_INSERT, intent.action) },
+            { assertEquals(CalendarContract.Events.CONTENT_URI, intent.data) }
         )
     }
 }
