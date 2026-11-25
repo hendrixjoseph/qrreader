@@ -51,6 +51,10 @@ class DecodedContentHandler(initialContent: String) {
         return getActionType().buttonText
     }
 
+    fun hasAction(): Boolean {
+        return getActionType() != QrActionType.NONE
+    }
+
     fun urlButtonsEnabled(): Boolean {
         return getActionType() == QrActionType.VIEW && !checkingRedirect
     }

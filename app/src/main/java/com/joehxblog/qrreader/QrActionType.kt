@@ -12,5 +12,5 @@ enum class QrActionType(val buttonText: String, val intentAction: String?) {
     CONNECT_WIFI("Connect", Settings.ACTION_WIFI_ADD_NETWORKS),
     ADD_EVENT("Add Event", Intent.ACTION_INSERT),
     ADD_CONTACT("Add Contact", Intent.ACTION_INSERT),
-    NONE("", null)
+    NONE("--", null)
 }

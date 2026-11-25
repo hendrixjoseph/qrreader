@@ -125,6 +125,7 @@ fun DecodedContentScreen(
 
             Button(
                 onClick = {decodedContentHandler.doIntentAction(context)},
+                enabled = decodedContentHandler.hasAction(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val text = decodedContentHandler.getButtonActionText()
