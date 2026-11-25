@@ -1,12 +1,14 @@
 package com.joehxblog.qrreader
 
-import com.joehxblog.qrreader.activity.MainActivity
+import com.joehxblog.qrreader.activity.DecodedContentActivity
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.robolectric.annotation.Config
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import tech.apter.junit.jupiter.robolectric.RobolectricExtension
 
 
@@ -39,21 +41,64 @@ class DecodedContentHandlerTest {
     @ParameterizedTest
     @CsvSource(
         textBlock = """
-        https://example.com?utm_p=yes&other=no, https://example.com?other=no
-        https://example.com?utm_p=yes, https://example.com?utm_p=yes
-        https://example.com,  https://example.com"""
+        https://example.com?utm_p=yes&other=no, https://example.com?other=no, true
+        https://example.com?utm_p=yes, https://example.com, true
+        https://example.com,  https://example.com, false"""
     )
     fun testRemoveUtmParameters(
         content: String,
-        expected: String
+        expectedValue: String,
+        exceptedSuccess: Boolean
     ) {
-        val context = Robolectric.buildActivity(MainActivity::class.java)
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
             .setup()
             .get()
 
         val handler = DecodedContentHandler(content)
         val success = handler.removeUtmParameters(context)
 
-        assertEquals(true, success)
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        val decodedValues = intent?.getStringArrayListExtra(
+            DecodedContentActivity.EXTRA_DECODED_VALUES
+        ) ?: arrayListOf(expectedValue)
+
+        assertAll(
+            { assertEquals(exceptedSuccess, success) },
+            { assertEquals(arrayListOf(expectedValue), decodedValues) }
+        )
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        textBlock = """
+        https://example.com?utm_p=yes&other=no, https://example.com, true
+        https://example.com?utm_p=yes, https://example.com, true
+        https://example.com,  https://example.com, false"""
+    )
+    fun testRemoveQueryParameters(
+        content: String,
+        expectedValue: String,
+        exceptedSuccess: Boolean
+    ) {
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
+            .setup()
+            .get()
+
+        val handler = DecodedContentHandler(content)
+        val success = handler.removeQueryParameters(context)
+
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        val decodedValues = intent?.getStringArrayListExtra(
+            DecodedContentActivity.EXTRA_DECODED_VALUES
+        ) ?: arrayListOf(expectedValue)
+
+        assertAll(
+            { assertEquals(exceptedSuccess, success) },
+            { assertEquals(arrayListOf(expectedValue), decodedValues) }
+        )
     }
 }
