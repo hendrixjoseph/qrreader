@@ -2,15 +2,15 @@ package com.joehxblog.qrreader
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.net.wifi.WifiNetworkSuggestion
 import android.provider.CalendarContract
 import android.provider.ContactsContract
+import android.provider.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import biweekly.Biweekly
-import biweekly.component.VEvent
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import ezvcard.Ezvcard
 import kotlinx.coroutines.Dispatchers
@@ -128,7 +128,7 @@ class DecodedContentHandler(initialContent: String) {
     }
 
     fun doIntentAction(context: Context) {
-        val actionType = getActionType();
+        val actionType = getActionType()
         val intentAction = actionType.intentAction
 
         if (intentAction != null) {
@@ -138,12 +138,81 @@ class DecodedContentHandler(initialContent: String) {
                     QrActionType.ADD_CONTACT -> doContactAction(context)
                     else -> {}
                 }
+            } else if (intentAction == Settings.ACTION_WIFI_ADD_NETWORKS) {
+                doWifiAction(context)
             } else {
                 val uri = content.toUri()
                 val intent = Intent(intentAction, uri)
                 context.startActivity(intent)
             }
         }
+    }
+
+    private fun doWifiAction(context: Context) {
+        val wifiString = content.removePrefix("WIFI:")
+
+        val parts = mutableMapOf(
+            "authType" to "",
+            "ssid" to "",
+            "password" to "",
+            "hidden" to "",
+            "" to ""
+        )
+
+        var step = ""
+        var parsing = false
+        var escaped = false
+
+        for (char in wifiString) {
+            if (parsing) {
+                if (escaped) {
+                    parts[step] = parts[step] + char
+                    escaped = false
+                } else if (char == '\\') {
+                    escaped = true
+                } else if (char == ';') {
+                    parsing = false
+                } else {
+                    parts[step] = parts[step] + char
+                }
+            } else if (char == ':') {
+                parsing = true
+            } else {
+                step = when (char) {
+                    'T' -> "authType"
+                    'S' -> "ssid"
+                    'P' -> "password"
+                    'H' -> "hidden"
+                    else -> ""
+                }
+            }
+        }
+
+        val suggestion = WifiNetworkSuggestion.Builder()
+            .setSsid(parts["ssid"] ?: "")
+            .apply {
+                when (parts["authType"]?.uppercase()) {
+                    "WPA", "WPA2", "WPA3" -> {
+                        val password = parts["password"] ?: ""
+                        setWpa2Passphrase(password)
+                    }
+                    else -> Unit
+                }
+
+                if (!parts["hidden"].isNullOrEmpty() && parts["hidden"].equals("true", ignoreCase = true)) {
+                    setIsHiddenSsid(true)
+                }
+            }
+            .build()
+
+        val intent = Intent(Settings.ACTION_WIFI_ADD_NETWORKS).apply {
+            putParcelableArrayListExtra(
+                Settings.EXTRA_WIFI_NETWORK_LIST,
+                arrayListOf(suggestion)
+            )
+        }
+
+        context.startActivity(intent)
     }
 
     private fun doContactAction(context: Context) {

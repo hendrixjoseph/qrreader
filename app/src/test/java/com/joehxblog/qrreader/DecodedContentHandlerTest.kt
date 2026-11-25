@@ -1,8 +1,10 @@
 package com.joehxblog.qrreader
 
 import android.content.Intent
+import android.net.wifi.WifiNetworkSuggestion
 import android.provider.CalendarContract
 import android.provider.ContactsContract
+import android.provider.Settings
 import androidx.core.net.toUri
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,6 +18,9 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import tech.apter.junit.jupiter.robolectric.RobolectricExtension
+import kotlin.text.equals
+import kotlin.text.isNullOrEmpty
+import kotlin.text.uppercase
 
 
 @ExtendWith(RobolectricExtension::class)
@@ -171,6 +176,32 @@ class DecodedContentHandlerTest {
         assertAll(
             { assertEquals(Intent.ACTION_INSERT, intent.action) },
             { assertEquals(ContactsContract.Contacts.CONTENT_URI, intent.data) }
+        )
+    }
+
+    @Test
+    fun testDoWifiAction() {
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
+            .setup()
+            .get()
+
+        val handler = DecodedContentHandler(CONNECT_WIFI)
+
+        handler.doIntentAction(context)
+
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        val suggestion = intent.getParcelableArrayListExtra(
+            Settings.EXTRA_WIFI_NETWORK_LIST,
+            WifiNetworkSuggestion::class.java
+        )?.firstOrNull()
+
+        assertAll(
+            { assertEquals(Settings.ACTION_WIFI_ADD_NETWORKS, intent.action) },
+            { assertEquals("TestNetwork", suggestion?.ssid) },
+            { assertEquals("TestPas;s:word123", suggestion?.passphrase) },
+            { assertEquals(false, suggestion?.isHiddenSsid) }
         )
     }
 }

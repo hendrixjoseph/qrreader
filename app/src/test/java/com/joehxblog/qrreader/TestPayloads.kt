@@ -5,7 +5,7 @@ const val DIAL = "tel:+15551234567"
 const val EMAIL = "mailto:test@example.com"
 const val TEXT = "sms:+15551234567?body=Hello%20there"
 const val MAP = "geo:39.7589,-84.1916"
-const val CONNECT_WIFI = "WIFI:T:WPA;S:TestNetwork;P:TestPassword123;;"
+const val CONNECT_WIFI = "WIFI:T:WPA;S:TestNetwork;P:TestPas\\;s\\:word123;;"
 
 const val ADD_EVENT =
 """BEGIN:VCALENDAR
