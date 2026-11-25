@@ -1,5 +1,7 @@
 package com.joehxblog.qrreader
 
+import android.content.Intent
+import androidx.core.net.toUri
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.assertAll
@@ -99,6 +101,33 @@ class DecodedContentHandlerTest {
         assertAll(
             { assertEquals(exceptedSuccess, success) },
             { assertEquals(arrayListOf(expectedValue), decodedValues) }
+        )
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        textBlock = """
+        $VIEW, ${Intent.ACTION_VIEW}
+        $DIAL, ${Intent.ACTION_DIAL}
+        $EMAIL, ${Intent.ACTION_SENDTO}
+        $TEXT, ${Intent.ACTION_SENDTO}
+        '$MAP', ${Intent.ACTION_VIEW}"""
+    )
+    fun testDoIntentAction(uri: String, expectedAction: String) {
+        val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
+            .setup()
+            .get()
+
+        val handler = DecodedContentHandler(uri)
+
+        handler.doIntentAction(context)
+
+        val shadowActivity = shadowOf(context)
+        val intent = shadowActivity.nextStartedActivity
+
+        assertAll(
+            { assertEquals(expectedAction, intent.action) },
+            { assertEquals(uri.toUri(), intent.data) }
         )
     }
 }
