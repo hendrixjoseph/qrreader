@@ -11,6 +11,7 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -153,13 +154,14 @@ class DecodedContentHandlerTest {
         )
     }
 
-    @Test
-    fun testDoContactAction() {
+    @ParameterizedTest
+    @ValueSource(strings = [ADD_CONTACT_vCARD, ADD_CONTACT_MECARD])
+    fun testDoContactAction(addContact: String) {
         val context = Robolectric.buildActivity(DecodedContentActivity::class.java)
             .setup()
             .get()
 
-        val handler = DecodedContentHandler(ADD_CONTACT_vCARD)
+        val handler = DecodedContentHandler(addContact)
 
         handler.doIntentAction(context)
 

@@ -147,9 +147,48 @@ class DecodedContentHandler(initialContent: String) {
     }
 
     private fun doContactAction(context: Context) {
+        val mapping = if (content.startsWith("BEGIN:VCARD")) {
+            getVCardMapping()
+        } else {
+            getMeCardMapping()
+        }
+
+        val intent = Intent(Intent.ACTION_INSERT).apply {
+            data = ContactsContract.Contacts.CONTENT_URI
+
+            mapping.forEach { (name, value) ->
+                value?.let {
+                    putExtra(name, it)
+                }
+            }
+        }
+
+        context.startActivity(intent)
+    }
+
+    private fun getMeCardMapping(): Map<String, String?> {
+        val mecard = content
+            .removePrefix("MECARD:")
+            .split(";")
+            .filter { it.contains(":") }
+            .associate {
+                val (key, value) = it.split(":", limit = 2)
+                key to value
+            }
+
+        return mapOf(
+            ContactsContract.Intents.Insert.NAME to mecard["N"]?.replace(",", " "),
+            ContactsContract.Intents.Insert.PHONE to mecard["TEL"],
+            ContactsContract.Intents.Insert.EMAIL to mecard["EMAIL"],
+            ContactsContract.Intents.Insert.COMPANY to mecard["ORG"],
+            ContactsContract.Intents.Insert.NOTES to mecard["NOTE"]
+        )
+    }
+
+    private fun getVCardMapping(): Map<String, String?> {
         val vcard = Ezvcard.parse(content).first()
 
-        val vcardMapping = mapOf(
+        return mapOf(
             ContactsContract.Intents.Insert.NAME to vcard.formattedName?.value,
             ContactsContract.Intents.Insert.PHONE to vcard.telephoneNumbers.firstOrNull()?.text,
             ContactsContract.Intents.Insert.EMAIL to vcard.emails.firstOrNull()?.value,
@@ -158,18 +197,6 @@ class DecodedContentHandler(initialContent: String) {
             ContactsContract.Intents.Insert.POSTAL to vcard.addresses.firstOrNull()?.streetAddressFull,
             ContactsContract.Intents.Insert.NOTES to vcard.notes.firstOrNull()?.value
         )
-
-        val intent = Intent(Intent.ACTION_INSERT).apply {
-            data = ContactsContract.Contacts.CONTENT_URI
-
-            vcardMapping.forEach { (name, value) ->
-                value?.let {
-                    putExtra(name, it)
-                }
-            }
-        }
-
-        context.startActivity(intent)
     }
 
     private fun doEventAction(context: Context) {
