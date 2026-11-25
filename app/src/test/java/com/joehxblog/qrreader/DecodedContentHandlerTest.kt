@@ -18,9 +18,6 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import tech.apter.junit.jupiter.robolectric.RobolectricExtension
-import kotlin.text.equals
-import kotlin.text.isNullOrEmpty
-import kotlin.text.uppercase
 
 
 @ExtendWith(RobolectricExtension::class)
@@ -39,7 +36,7 @@ class DecodedContentHandlerTest {
         some random text,    ''
         ftp://example.com,   ''"""
     )
-    fun `returns expected button action text`(
+    fun testGetButtonActionText(
         content: String,
         expected: String
     ) {

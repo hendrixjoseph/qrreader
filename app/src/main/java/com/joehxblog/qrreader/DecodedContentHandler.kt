@@ -132,18 +132,22 @@ class DecodedContentHandler(initialContent: String) {
         val intentAction = actionType.intentAction
 
         if (intentAction != null) {
-            if (intentAction == Intent.ACTION_INSERT) {
-                when (actionType) {
-                    QrActionType.ADD_EVENT -> doEventAction(context)
-                    QrActionType.ADD_CONTACT -> doContactAction(context)
-                    else -> {}
+            when (intentAction) {
+                Intent.ACTION_INSERT -> {
+                    when (actionType) {
+                        QrActionType.ADD_EVENT -> doEventAction(context)
+                        QrActionType.ADD_CONTACT -> doContactAction(context)
+                        else -> {}
+                    }
                 }
-            } else if (intentAction == Settings.ACTION_WIFI_ADD_NETWORKS) {
-                doWifiAction(context)
-            } else {
-                val uri = content.toUri()
-                val intent = Intent(intentAction, uri)
-                context.startActivity(intent)
+                Settings.ACTION_WIFI_ADD_NETWORKS -> {
+                    doWifiAction(context)
+                }
+                else -> {
+                    val uri = content.toUri()
+                    val intent = Intent(intentAction, uri)
+                    context.startActivity(intent)
+                }
             }
         }
     }
