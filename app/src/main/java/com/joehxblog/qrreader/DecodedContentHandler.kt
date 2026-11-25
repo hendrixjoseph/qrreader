@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.CalendarContract
+import android.provider.ContactsContract
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -147,7 +148,28 @@ class DecodedContentHandler(initialContent: String) {
 
     private fun doContactAction(context: Context) {
         val vcard = Ezvcard.parse(content).first()
-        // TODO: this function
+
+        val vcardMapping = mapOf(
+            ContactsContract.Intents.Insert.NAME to vcard.formattedName?.value,
+            ContactsContract.Intents.Insert.PHONE to vcard.telephoneNumbers.firstOrNull()?.text,
+            ContactsContract.Intents.Insert.EMAIL to vcard.emails.firstOrNull()?.value,
+            ContactsContract.Intents.Insert.COMPANY to vcard.organizations.firstOrNull()?.values?.firstOrNull(),
+            ContactsContract.Intents.Insert.JOB_TITLE to vcard.titles.firstOrNull()?.value,
+            ContactsContract.Intents.Insert.POSTAL to vcard.addresses.firstOrNull()?.streetAddressFull,
+            ContactsContract.Intents.Insert.NOTES to vcard.notes.firstOrNull()?.value
+        )
+
+        val intent = Intent(Intent.ACTION_INSERT).apply {
+            data = ContactsContract.Contacts.CONTENT_URI
+
+            vcardMapping.forEach { (name, value) ->
+                value?.let {
+                    putExtra(name, it)
+                }
+            }
+        }
+
+        context.startActivity(intent)
     }
 
     private fun doEventAction(context: Context) {

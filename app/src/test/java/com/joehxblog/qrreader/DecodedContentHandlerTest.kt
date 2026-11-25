@@ -2,6 +2,7 @@ package com.joehxblog.qrreader
 
 import android.content.Intent
 import android.provider.CalendarContract
+import android.provider.ContactsContract
 import androidx.core.net.toUri
 import com.joehxblog.qrreader.activity.DecodedContentActivity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -167,7 +168,7 @@ class DecodedContentHandlerTest {
 
         assertAll(
             { assertEquals(Intent.ACTION_INSERT, intent.action) },
-            { assertEquals(CalendarContract.Events.CONTENT_URI, intent.data) }
+            { assertEquals(ContactsContract.Contacts.CONTENT_URI, intent.data) }
         )
     }
 }
